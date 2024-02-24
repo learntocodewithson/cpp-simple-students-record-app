@@ -8,9 +8,39 @@ class Student {
  string student_id;
  string full_name;
  string course;
+ string message;
  int year;
 
  public:
+  // setter
+  void setStudentId(string s){
+    student_id = s;
+  }
+
+  void setFullName(string s){
+    full_name = s;
+  }
+
+  void setCourse(string s){
+    course = s;
+  }
+
+  void setYear(int n){
+    year = n;
+  }
+
+  void setNotificationMessage(string s){
+    message = s;
+  }
+
+  string getNotificationMessage(){
+    return message;
+  }
+
+  void resetNotificationMessage(){
+    message = "";
+  }
+  
   string displayTitle(){
    return "\n\t" + displayLine() + "\n\tSimple Students Record App\n";
   }
@@ -25,6 +55,17 @@ class Student {
   }
   string displayLine(){
    return "===========================";
+  }
+
+  void create(){
+    ofstream Students("students.csv", ios::app);
+    if(Students.is_open()){
+      Students << student_id << "," << full_name << "," << course << "," << year << endl;
+      
+      Students.close();
+
+      setNotificationMessage("\nNew student record has been successfully added.\n");
+    }
   }
 };
 
@@ -41,6 +82,11 @@ int main(){
 
  do {
   system("clear");
+
+  if (student.getNotificationMessage() != ""){
+    cout << student.getNotificationMessage();
+    student.resetNotificationMessage();
+  }
 
   cout << student.displayTitle();
   cout << student.displayMenu();
@@ -73,7 +119,36 @@ int main(){
 }
 
 void addNewStudent(Student &student){
- cout << "Add new student";
+ string student_id;
+ string full_name;
+ string course;
+ int year;
+ 
+ system("clear");
+
+ cout << student.displayLine();
+ cout << "\nAdd New Student\n";
+ cout << student.displayLine();
+
+ cout << "\nEnter student id: ";
+ cin >> student_id;
+
+ cout << "Enter student full name: ";
+ cin.ignore(numeric_limits<streamsize>::max(), '\n');
+ getline(cin, full_name);
+
+ cout << "Enter student course: ";
+ getline(cin, course);
+
+ cout << "Enter student course year: ";
+ cin >> year;
+
+ student.setStudentId(student_id);
+ student.setFullName(full_name);
+ student.setCourse(course);
+ student.setYear(year);
+
+ student.create();
 }
 
 void editStudent(Student &student){
