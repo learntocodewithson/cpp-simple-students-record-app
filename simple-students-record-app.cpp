@@ -29,6 +29,24 @@ class Student {
     year = n;
   }
 
+  // getter
+
+  string getStudentId(){
+    return student_id;
+  }
+
+  string getFullName(){
+    return full_name;
+  }
+
+  string getCourse(){
+    return course;
+  }
+
+  int getYear(){
+    return year;
+  }
+
   void setNotificationMessage(string s){
     message = s;
   }
@@ -44,6 +62,7 @@ class Student {
   string displayTitle(){
    return "\n\t" + displayLine() + "\n\tSimple Students Record App\n";
   }
+
   string displayMenu(){
    return "\t\tMain Menu\n"
     "\t1.) Add New Student\n"
@@ -53,8 +72,37 @@ class Student {
     "\t5.) Exit\n\t" + 
     displayLine();
   }
+
   string displayLine(){
    return "===========================";
+  }
+
+  string displayAllStudentsId(){
+    string row_data, students_id;
+    int counter = 0;
+
+    ifstream Students("students.csv");
+    cout << "\n\nStudent Id\n";
+    while(getline(Students, row_data)){
+      counter++;
+      
+      // row_data = "1231,Jhon Doe,BSIT,2013"
+      istringstream scanner(row_data);
+      string studentid;
+
+      // 1231,
+      getline(scanner, studentid, ',');
+
+      students_id +=  to_string(counter) +  ".) " + studentid + "\n";
+    }
+
+    Students.close();
+
+    return students_id;
+  }
+
+  bool exists(){
+    return student_id != "" && full_name != "" && course != "" && year != 0;
   }
 
   void create(){
@@ -67,12 +115,44 @@ class Student {
       setNotificationMessage("\nNew student record has been successfully added.\n");
     }
   }
+
+  void searchByStudentId(string studentid){
+    string row_data, temp_year;
+    bool found = false;
+
+    ifstream Students("students.csv");
+
+    while(getline(Students, row_data)){
+      istringstream scanner(row_data);
+
+      getline(scanner, student_id, ',');
+      getline(scanner, full_name, ',');
+      getline(scanner, course, ',');
+      getline(scanner, temp_year);
+
+      if(student_id == studentid){
+        year = stoi(temp_year);
+        found = true;
+        break;
+      }
+    }
+    Students.close();
+
+    if(!found)
+      resetFields();
+  }
+
+  void resetFields(){
+    student_id = full_name = course = "";
+    year = 0;
+  }
 };
 
 void addNewStudent(Student &student);
 void editStudent(Student &student);
 void viewStudent(Student &student);
 void deleteStudent(Student &student);
+void header(Student &student, string title);
 void exitProgram();
 
 int main(){
@@ -124,11 +204,8 @@ void addNewStudent(Student &student){
  string course;
  int year;
  
- system("clear");
 
- cout << student.displayLine();
- cout << "\nAdd New Student\n";
- cout << student.displayLine();
+ header(student, "\nAdd New Student\n");
 
  cout << "\nEnter student id: ";
  cin >> student_id;
@@ -156,7 +233,21 @@ void editStudent(Student &student){
 }
 
 void viewStudent(Student &student){
- cout << "View student";
+ string student_id;
+ header(student, "\nView Student\n");
+
+ cout << student.displayAllStudentsId();
+
+ cout << "\nEnter student id: ";
+ cin >> student_id;
+
+ student.searchByStudentId(student_id);
+
+ if(student.exists()){
+  student.setNotificationMessage("\n\tStudent Found -> \n\tStudent Id: " + student.getStudentId() + "\n\tStudent Name: " + student.getFullName() + "\n\tStudent Course: " + student.getCourse() + "\n\tStudent Course Year: " + to_string(student.getYear()) + "\n");
+ } else {
+  student.setNotificationMessage("\nStudent not found with student id " + student_id + "\n");
+ }
 }
 
 void deleteStudent(Student &student){
@@ -165,4 +256,12 @@ void deleteStudent(Student &student){
 
 void exitProgram(){
  cout << "Thank you for using this app.";
+}
+
+void header(Student &student, string title){
+ system("clear");
+
+ cout << student.displayLine();
+ cout << title;
+ cout << student.displayLine();
 }
