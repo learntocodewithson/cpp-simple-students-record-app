@@ -5,11 +5,8 @@
 using namespace std;
 
 class Student {
- string student_id;
- string full_name;
- string course;
- string message;
- int year;
+ string student_id, full_name, course, message;
+ int year, students_count;
 
  public:
   // setter
@@ -114,6 +111,63 @@ class Student {
 
       setNotificationMessage("\nNew student record has been successfully added.\n");
     }
+  }
+
+  void deleteNow(){
+    setStudentsCount();
+
+    string row_data, studentid, temp_students[students_count];
+    int counter = 0;
+    // read students.csv
+    ifstream ReadStudents("students.csv");
+    while(getline(ReadStudents, row_data)){
+     
+      // object for parsing or splitting
+      istringstream scanner(row_data);
+
+      // split the first word with comma
+      // 1231,
+      getline(scanner, studentid, ',');
+
+      if(studentid != getStudentId()){
+        temp_students[counter] = row_data;
+        
+        // to avoid gap on the index
+        counter++;
+      }
+    }
+    ReadStudents.close();
+
+    // open new students.csv
+    ofstream WriteStudents("students.csv");
+    if(WriteStudents.is_open()){
+      for(int i = 0; i < students_count; i++){
+        if(temp_students[i] != "")
+          WriteStudents << temp_students[i] + "\n";
+      }
+       
+      
+      WriteStudents.close();
+    }else{
+      setNotificationMessage("\nUnable to create and open a file for students\n");
+    }
+
+  }
+
+  void setStudentsCount(){
+    students_count = 0;
+
+    // holds the string each line on the file
+    string row_data;
+
+    // open the file
+    ifstream ReadStudents("students.csv");
+
+    // loop each row on the file and count it   
+    while(getline(ReadStudents, row_data)){ students_count++; }
+
+    // close the file
+    ReadStudents.close();
   }
 
   void searchByStudentId(string studentid){
@@ -251,7 +305,23 @@ void viewStudent(Student &student){
 }
 
 void deleteStudent(Student &student){
- cout << "Delete student";
+  string delete_question;
+  viewStudent(student);
+
+  if(student.exists()){
+    cout << student.getNotificationMessage();
+
+    cout << "\nAre you sure you want to delete this student? <yes or no>: ";
+    cin >> delete_question;
+
+    if(delete_question == "yes"){
+      student.deleteNow();
+      student.setNotificationMessage("\nStudent " + student.getStudentId() + " is now deleted.\n");
+      student.resetFields();
+    }else{
+      student.setNotificationMessage("\nStudent is not deleted\n");
+    }
+  }
 }
 
 void exitProgram(){
