@@ -15,15 +15,18 @@ class Student {
   }
 
   void setFullName(string s){
-    full_name = s;
+    if(s != "")
+      full_name = s;
   }
 
   void setCourse(string s){
-    course = s;
+    if(s != "")
+      course = s;
   }
 
   void setYear(int n){
-    year = n;
+    if(n != 0)
+      year = n;
   }
 
   // getter
@@ -111,6 +114,54 @@ class Student {
 
       setNotificationMessage("\nNew student record has been successfully added.\n");
     }
+  }
+
+  void update(){
+    setStudentsCount();
+
+    string row_data, studentid, temp_students[students_count];
+    string formatted_student_data = getStudentId() + "," + getFullName() + "," + getCourse() + "," + to_string(getYear());
+    int counter = 0;
+
+    // reading the records on the file and store it on the temporary array
+
+    // open file
+    ifstream ReadStudents("students.csv");
+    while(getline(ReadStudents, row_data)){
+     
+     istringstream scanner(row_data);
+     
+     getline(scanner, studentid, ',');
+      
+     if(studentid == getStudentId()){
+      temp_students[counter] = formatted_student_data;
+     }else{
+      temp_students[counter] = row_data;
+     }
+
+     counter++;
+    }
+
+    // closing the file
+    ReadStudents.close();
+
+    // open a new file students.csv and loop temporary students array and add all to the file
+    
+    ofstream WriteStudents("students.csv");
+
+    if(WriteStudents.is_open()){
+
+      // updating the new list of students
+      for(int i = 0; i < students_count; i++){
+        WriteStudents << temp_students[i] << endl;
+      }
+
+      WriteStudents.close();
+
+    } else {
+      setNotificationMessage("\nUnable to create and open a file");
+    }
+
   }
 
   void deleteNow(){
@@ -253,9 +304,7 @@ int main(){
 }
 
 void addNewStudent(Student &student){
- string student_id;
- string full_name;
- string course;
+ string student_id, full_name, course;
  int year;
  
 
@@ -283,7 +332,44 @@ void addNewStudent(Student &student){
 }
 
 void editStudent(Student &student){
- cout << "Edit student";
+  string full_name, course, year;
+  string update_question;
+
+  viewStudent(student);
+
+  if(student.exists()){
+    // printing the latest message
+    cout << student.getNotificationMessage();
+
+    cout << "\nEdit student full name <" << student.getFullName() << ">: ";
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    getline(cin, full_name);
+
+    cout << "Edit student course <" << student.getCourse() << ">: ";
+    getline(cin, course);
+
+    cout << "Edit student course year <" << student.getYear() << ">: ";
+    getline(cin, year);
+
+    // rule: if any of the variables are empty, skip updating the student object
+    student.setFullName(full_name);
+    student.setCourse(course);
+    if(year != "")
+      student.setYear(stoi(year));
+
+    cout << "\nAre you sure you want to update this student? <yes or no>: ";
+    cin >> update_question;
+
+    if(update_question == "yes"){
+      student.update();
+      student.setNotificationMessage("\nStudent " + student.getStudentId() + " is successfully updated.\n");
+      student.resetFields();
+    }else{
+      student.setNotificationMessage("\nStudent is not updated\n");
+    }
+  }
+
+
 }
 
 void viewStudent(Student &student){
